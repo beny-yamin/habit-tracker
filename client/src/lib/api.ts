@@ -10,7 +10,8 @@ import type {
 } from '../types';
 
 const rawBaseUrl = (import.meta.env.VITE_API_BASE_URL as string | undefined) || 'http://localhost:5173/api';
-const BASE_URL = rawBaseUrl.endsWith('/') ? rawBaseUrl.slice(0, -1) : rawBaseUrl;
+const cleanBaseUrl = rawBaseUrl.replace(/\/+$/, '');
+const BASE_URL = cleanBaseUrl.endsWith('/api') ? cleanBaseUrl : `${cleanBaseUrl}/api`;
 
 /**
  * Retrieves the current user's Firebase ID token for Authorization header injection.
