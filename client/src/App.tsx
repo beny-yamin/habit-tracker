@@ -12,6 +12,8 @@ import {
   CheckCircle2,
   Flame,
   Star,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { HabitProvider, useHabits } from './context/HabitContext';
@@ -152,10 +154,80 @@ function TabNavigation({
   );
 }
 
+/** Month navigator — lets users switch between months for analytics and reflections. */
+function MonthSelector({
+  selectedMonth,
+  onChange,
+}: {
+  selectedMonth: string;
+  onChange: (month: string) => void;
+}): React.ReactElement {
+  const handlePrev = () => {
+    const [y, m] = selectedMonth.split('-').map(Number);
+    const d = new Date(y, m - 2, 1, 12);
+    onChange(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`);
+  };
+  const handleNext = () => {
+    const [y, m] = selectedMonth.split('-').map(Number);
+    const d = new Date(y, m, 1, 12);
+    onChange(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`);
+  };
+  const label = (() => {
+    const [y, m] = selectedMonth.split('-').map(Number);
+    return new Date(y, m - 1, 1).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+  })();
+
+  const currentMonthKey = (() => {
+    const now = new Date();
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+  })();
+  const isCurrent = selectedMonth === currentMonthKey;
+
+  return (
+    <div className="flex items-center gap-2 p-1 bg-slate-900/80 border border-slate-800 rounded-xl backdrop-blur-md shadow-sm">
+      <button
+        type="button"
+        onClick={handlePrev}
+        className="min-w-[36px] min-h-[36px] flex items-center justify-center rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition-colors"
+        title="Previous month"
+      >
+        <ChevronLeft className="w-4 h-4" />
+      </button>
+      <span className="px-3 py-1 text-sm font-semibold text-slate-200 min-w-[140px] text-center">
+        {label}
+      </span>
+      <button
+        type="button"
+        onClick={handleNext}
+        disabled={isCurrent}
+        className="min-w-[36px] min-h-[36px] flex items-center justify-center rounded-lg bg-slate-800 hover:bg-slate-700 disabled:opacity-40 text-slate-300 border border-slate-700 transition-colors"
+        title="Next month"
+      >
+        <ChevronRight className="w-4 h-4" />
+      </button>
+    </div>
+  );
+}
+
 function Dashboard(): React.ReactElement {
   const [tab, setTab] = useState<ActiveTab>('weekly');
-  const { habits, logs, currentWeekDate, selectedMonth, getMonthlyReflection } = useHabits();
+  const {
+    habits,
+    logs,
+    currentWeekDate,
+    selectedMonth,
+    setSelectedMonth,
+    loadMonthLogs,
+    getMonthlyReflection,
+  } = useHabits();
   const [reflection, setReflection] = useState<MonthlyReflection | undefined>(undefined);
+
+  // Load full-month logs whenever analytics or reflections tab is active, or month changes.
+  useEffect(() => {
+    if (tab === 'analytics' || tab === 'reflections') {
+      void loadMonthLogs(selectedMonth);
+    }
+  }, [tab, selectedMonth, loadMonthLogs]);
 
   const fetchReflection = useCallback(() => {
     void getMonthlyReflection(selectedMonth).then(setReflection);
@@ -219,6 +291,11 @@ function Dashboard(): React.ReactElement {
 
         {tab === 'analytics' && (
           <div className="space-y-6">
+            {/* Month navigator + summary row */}
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+              <h2 className="text-base font-bold text-white tracking-tight">Monthly Analytics</h2>
+              <MonthSelector selectedMonth={selectedMonth} onChange={setSelectedMonth} />
+            </div>
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
               <StatCard title="Completion Rate" value={`${completionRate}%`} subtitle="Month overall" icon={CheckCircle2} accentColor="#6366f1" />
               <StatCard title="Perfect Day Streak" value={`${streakStats.currentPerfectStreak}d`} subtitle={`Best: ${streakStats.longestPerfectStreak}d`} icon={Flame} accentColor="#f43f5e" />
@@ -232,6 +309,11 @@ function Dashboard(): React.ReactElement {
 
         {tab === 'reflections' && (
           <div className="space-y-6 max-w-4xl mx-auto">
+            {/* Month navigator */}
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+              <h2 className="text-base font-bold text-white tracking-tight">Monthly Reflection</h2>
+              <MonthSelector selectedMonth={selectedMonth} onChange={setSelectedMonth} />
+            </div>
             <ReflectionEditor monthKey={selectedMonth} onSaved={fetchReflection} />
             <PrintableReport monthKey={selectedMonth} reportData={monthlyReportData} reflection={reflection} />
           </div>

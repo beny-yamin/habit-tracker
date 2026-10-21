@@ -13,10 +13,10 @@ export interface NotePopoverProps {
 }
 
 const QUALITY_LEVELS: { value: HabitQuality; label: string; activeClass: string }[] = [
-  { value: 1, label: '1 - Poor', activeClass: 'bg-rose-600 text-white border-rose-500' },
-  { value: 2, label: '2 - Fair', activeClass: 'bg-amber-600 text-white border-amber-500' },
-  { value: 3, label: '3 - Good', activeClass: 'bg-blue-600 text-white border-blue-500' },
-  { value: 4, label: '4 - Excellent', activeClass: 'bg-emerald-600 text-white border-emerald-500' },
+  { value: 1, label: 'Very Poor', activeClass: 'bg-rose-600 text-white border-rose-500' },
+  { value: 2, label: 'Good', activeClass: 'bg-amber-600 text-white border-amber-500' },
+  { value: 3, label: 'Better', activeClass: 'bg-blue-600 text-white border-blue-500' },
+  { value: 4, label: 'Best', activeClass: 'bg-emerald-600 text-white border-emerald-500' },
 ];
 
 export function NotePopover({

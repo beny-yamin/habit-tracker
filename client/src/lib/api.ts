@@ -7,6 +7,7 @@ import type {
   MonthlyReportResponse,
   ReflectionPayload,
   ReflectionResponse,
+  MonthlyReflection,
 } from '../types';
 
 const rawBaseUrl = (import.meta.env.VITE_API_BASE_URL as string | undefined) || 'http://localhost:5173/api';
@@ -108,6 +109,18 @@ export async function saveReflection(payload: ReflectionPayload): Promise<Reflec
   });
 }
 
+/**
+ * Retrieves a stored monthly reflection for the given month key.
+ */
+export async function getReflection(
+  monthKey: string
+): Promise<{ success: boolean; reflection: MonthlyReflection | null }> {
+  const query = new URLSearchParams({ monthKey }).toString();
+  return apiRequest<{ success: boolean; reflection: MonthlyReflection | null }>(
+    `/reports/reflections?${query}`
+  );
+}
+
 export const api = {
   request: apiRequest,
   getHabits,
@@ -115,4 +128,5 @@ export const api = {
   batchSyncLogs,
   getMonthlyReport,
   saveReflection,
+  getReflection,
 };
